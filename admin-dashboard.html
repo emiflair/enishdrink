@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enish Menu Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f0f12;
+      --panel: #1c1c22;
+      --accent: #e6c363;
+      --accent-soft: rgba(230,195,99,0.18);
+      --border: rgba(255,255,255,0.08);
+      --text: #f6f6f9;
+      --text-soft: rgba(246,246,249,0.68);
+      --danger: #ff6b6b;
+      --success: #29cc7a;
+      --radius: 14px;
+      --shadow: 0 20px 40px -25px rgba(0,0,0,0.65);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 15% 15%, rgba(230,195,99,0.08), transparent 55%), var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px clamp(16px, 5vw, 40px) 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(17,17,20,0.75);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    header h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw + 0.6rem, 2.2rem);
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    header .hint {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(220px, 280px) 1fr;
+      gap: clamp(16px, 3vw, 26px);
+      padding: clamp(16px, 5vw, 40px);
+    }
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .nav-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      top: 124px;
+      max-height: calc(100vh - 156px);
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+    }
+    .nav-card h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      color: var(--text-soft);
+    }
+    .sub-heading {
+      margin-top: 12px;
+    }
+    .page-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-button {
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.03);
+      color: inherit;
+      text-align: left;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border 0.2s ease, background 0.2s ease, transform 0.25s ease;
+    }
+    .nav-button:hover {
+      border-color: rgba(230,195,99,0.4);
+      background: rgba(230,195,99,0.08);
+      transform: translateY(-1px);
+    }
+    .nav-button[aria-current="page"] {
+      background: var(--accent-soft);
+      border-color: rgba(230,195,99,0.65);
+      color: var(--accent);
+      font-weight: 600;
+      box-shadow: 0 12px 24px -18px rgba(230,195,99,0.8);
+    }
+    .nav-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      line-height: 1.6;
+    }
+    .nav-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .workspace {
+      min-height: 75vh;
+      border-radius: var(--radius);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 5vw, 36px);
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      overflow: auto;
+    }
+    .workspace-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding-bottom: 16px;
+    }
+    .workspace-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.4px;
+    }
+    .workspace-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    button.action {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.2s ease;
+    }
+    button.action.primary {
+      background: var(--accent);
+      color: #120d07;
+      box-shadow: 0 12px 30px -16px var(--accent);
+    }
+    button.action.secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    button.action.danger {
+      background: rgba(255,107,107,0.12);
+      color: #ff8f8f;
+      border: 1px solid rgba(255,107,107,0.4);
+    }
+    button.action:hover { transform: translateY(-1px); }
+    button.action:active { transform: translateY(0); filter: brightness(0.98); }
+    button.action:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .save-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px clamp(18px, 4vw, 28px);
+      border-radius: var(--radius);
+      border: 1px solid rgba(230,195,99,0.28);
+      background: linear-gradient(135deg, rgba(230,195,99,0.18), rgba(12,12,16,0.72));
+      box-shadow: 0 22px 44px -28px rgba(230,195,99,0.45);
+      margin-top: auto;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .save-bar.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+    }
+    .save-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 200px;
+    }
+    .save-info strong {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--accent);
+    }
+    .save-info span {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+    .save-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .sections {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .section-card {
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(255,255,255,0.015), rgba(0,0,0,0.35));
+      padding: 22px clamp(18px, 4vw, 28px) 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .section-card header {
+      position: static;
+      padding: 0;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .section-card header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .section-meta {
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+    }
+    .items-table {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .item-editor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px 14px;
+      padding: 16px 18px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+    .item-editor.deleted {
+      opacity: 0.4;
+      filter: grayscale(0.5);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.75rem;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+    .field input,
+    .field textarea {
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(12,12,16,0.65);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      transition: border 0.15s ease, box-shadow 0.2s ease;
+      resize: vertical;
+      min-height: 38px;
+    }
+    .field textarea {
+      min-height: 74px;
+    }
+    .field input:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: rgba(230,195,99,0.6);
+      box-shadow: 0 0 0 3px rgba(230,195,99,0.18);
+    }
+    .item-actions {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: rgba(230,195,99,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(230,195,99,0.35);
+      align-self: flex-start;
+    }
+    .empty-state {
+      padding: 40px;
+      border: 1px dashed rgba(255,255,255,0.12);
+      border-radius: var(--radius);
+      text-align: center;
+      color: var(--text-soft);
+      letter-spacing: 0.4px;
+    }
+    .spinner {
+      width: 58px;
+      height: 58px;
+      margin: 60px auto;
+      border-radius: 50%;
+      border: 5px solid rgba(255,255,255,0.08);
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15,15,15,0.92);
+      border: 1px solid rgba(230,195,99,0.35);
+      border-radius: 12px;
+      padding: 14px 22px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      box-shadow: 0 18px 36px -24px rgba(0,0,0,0.8);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -6px);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: rgba(255,255,255,0.65);
+    }
+    .badge span {
+      display: inline-flex;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      transition: background-color 0.25s ease;
+    }
+    .badge.warn span {
+      background: #ff9f1c;
+    }
+    .offers-editor {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .offer-card {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .offer-card header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .offer-card header h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .lines-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .line-row {
+      display: flex;
+      gap: 8px;
+    }
+    .line-row input {
+      flex: 1;
+    }
+    .line-row button {
+      border-radius: 9px;
+      border: none;
+      padding: 0 12px;
+      background: rgba(255,255,255,0.08);
+      color: var(--danger);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      .nav-card {
+        position: static;
+        max-height: initial;
+      }
+    }
+    @media (max-width: 640px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .workspace {
+        padding: 20px;
+      }
+      .item-editor {
+        grid-template-columns: 1fr;
+      }
+      .save-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .save-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+      .save-actions button {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Enish Menu Admin Dashboard</h1>
+      <div class="hint">Manage menu items, prices, descriptions, and weekly offers in one place.</div>
+    </div>
+    <div class="badge" id="serverStatus"><span></span>Local server required (for file fetch)</div>
+  </header>
+  <main>
+    <nav>
+      <div class="nav-card">
+        <h2>Menus</h2>
+        <div class="page-list" id="pageList"></div>
+        <h2 class="sub-heading">Specials</h2>
+        <div class="page-list">
+          <button class="nav-button" type="button" data-view="offers">Weekly Offers</button>
+        </div>
+        <div class="nav-footer">
+          <strong>Tip</strong>: Serve this folder with a local web server (e.g. <code>npx serve</code>) so the dashboard can fetch and rewrite HTML files. After downloading updated pages, replace the originals in your project.
+        </div>
+      </div>
+    </nav>
+    <section class="workspace" id="workspace">
+      <div class="workspace-header">
+        <h2>Select a page to begin</h2>
+      </div>
+      <div class="empty-state">
+        Pick any menu on the left to load its sections. You can edit names, tweak prices, add new lines, or remove outdated items. Changes stay in-memory until you click <em>Download Updated Page</em>.
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="admin-dashboard.js" type="module"></script>
+</body>
+</html>
