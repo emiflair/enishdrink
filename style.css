@@ -197,8 +197,7 @@ body {
   .happy-hour-panel { padding: var(--space-5) var(--space-4) var(--space-5); }
   .happy-hour-groups { grid-template-columns: repeat(auto-fill,minmax(170px,1fr)); gap: var(--space-4); }
 }
-
-@media (max-width: 860px){ .offers-panel { padding: var(--space-5) var(--space-5) var(--space-4); } }
+/* (Removed experimental larger mobile logo overrides during revert) */
 @media (max-width: 640px){
   .offers-heading { font-size:1.3rem; }
   .offers-week { grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); }
@@ -247,38 +246,29 @@ header {
   backdrop-filter: blur(10px) saturate(160%);
   background: rgba(24,18,13,0.78);
   border-bottom: 1px solid rgba(var(--color-accent-rgb),0.25);
-  padding: 4px 0 4px; /* tighter vertical padding */
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-3);
 }
 .site-header.scrolled { background: rgba(24,18,13,0.9); box-shadow: 0 4px 18px -8px rgba(0,0,0,0.65); border-bottom-color: rgba(var(--color-accent-rgb),0.35); }
 
 /* Mobile: use fixed header to avoid disappearing during momentum scroll */
 @media (max-width: 760px){
   .site-header { position: fixed; left:0; right:0; top:0; z-index:160; }
-  body.has-fixed-header { padding-top: calc(var(--site-header-height, 110px) + 4px); }
-  .site-header.scrolled { padding-top: 4px; padding-bottom: 8px; }
-  .site-header.scrolled .logo { width: 220px; transition: width .35s ease; }
+  body.has-fixed-header { padding-top: calc(var(--site-header-height, 148px) + 6px); }
 }
 .site-header-inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 2px var(--space-4) 2px; /* reduce internal spacing */
+  padding: 0 var(--space-4);
   display: flex;
-  flex-direction: column; /* logo stacked above nav */
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 6px; /* smaller gap */
+  gap: var(--space-3);
   position: relative;
 }
 
-/* Larger logo while keeping compact header */
-.logo {
-  width: clamp(180px, 22vw, 300px);
-  height: auto;
-  margin: 0;
-  display: block;
-  animation: fadeInScale .55s ease-out forwards;
-  transition: width .35s ease, filter .3s ease;
-}
+/* Reverted logo sizing */
+.logo { width: 300px; height: auto; margin: 20px auto; display: block; animation: fadeInScale 1s ease-out forwards; }
 @keyframes fadeInScale {
   from {
     opacity: 0;
@@ -366,15 +356,7 @@ header, footer {
   text-align: center;
   margin-bottom: 30px;
 }
-/* Override older large logo definition with new larger sizing */
-.logo {
-  width: clamp(180px, 22vw, 300px);
-  height: auto;
-  margin: 0 auto; /* remove extra vertical space */
-  display: block;
-  animation: fadeInScale .55s ease-out forwards;
-  object-fit: contain;
-}
+/* (Removed duplicate override from experimental phase) */
 @keyframes fadeInScale {
   from {
     opacity: 0;
@@ -525,63 +507,52 @@ nav.menu-nav-wrapper {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 4px 10px; /* even smaller gaps */
-    margin: 0 auto; /* no extra top space */
-    padding: 0 var(--space-1) 0; /* tighter horizontal padding */
+    gap: 26px 42px;
+    margin: 14px auto 0;
+    padding: 0 var(--space-5) 4px;
     max-width: 1180px;
   }
   .menu-nav a {
     font-family: 'Playfair Display', serif;
-    font-size: .6rem; /* ultra reduced */
+    font-size: 1.14rem;
     color: var(--color-accent);
     text-decoration: none;
     font-weight: 600;
-    letter-spacing: .12px;
-    padding: 1px 6px; /* slimmer button */
-    border-radius: 6px; /* proportional smaller corner */
+    letter-spacing: .4px;
+    padding: 10px 26px;
+    border-radius: 20px;
     background: rgba(191,167,106,0.08);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
     border: 1px solid rgba(var(--color-accent-rgb),0.25);
     position: relative;
-    line-height: 1.05;
-    transition: background .2s ease, color .2s ease, border-color .2s ease, box-shadow .25s ease;
-    white-space: nowrap;
-    min-height: 20px; /* approaching minimum practical tap target for desktop */
+    line-height: 1.1;
+    transition: background .35s ease, color .35s ease, border-color .35s ease, box-shadow .45s ease;
   }
   .menu-nav a.active {
     background: linear-gradient(135deg,#d7c98f,#bfa76a 65%);
     color: #21160f;
-    box-shadow: 0 3px 8px -5px rgba(0,0,0,.65);
-    border-color: rgba(0,0,0,.5);
+    box-shadow: 0 4px 10px -6px rgba(0,0,0,.7);
+    border-color: rgba(0,0,0,.55);
     font-weight: 700;
   }
   @media (hover:hover){
     .menu-nav a:not(.active):hover { background: rgba(191,167,106,.18); color: #f5e6c8; border-color: rgba(var(--color-accent-rgb),0.4); }
   }
   .menu-nav a:focus-visible { outline: 2px solid #d6c68c; outline-offset: 2px; }
-  @media (max-width: 760px){
-    .site-header { position: fixed; left:0; right:0; top:0; z-index:160; }
-    body.has-fixed-header { padding-top: calc(var(--site-header-height, 96px)); }
-    .site-header { padding: 4px 0 6px; }
-  .site-header.scrolled .logo { width: clamp(150px, 36vw, 220px); }
+  @media (max-width: 980px){
+    .menu-nav { gap: 18px 28px; padding: 0 var(--space-4); }
+    .menu-nav a { font-size: 1.02rem; padding: 9px 20px; }
   }
-  @media (min-width: 761px){
-  .site-header.scrolled .logo { width: clamp(150px,18vw,220px); }
-    .site-header.scrolled { padding: 4px 0 6px; }
+  @media (max-width: 640px){
+    .menu-nav { flex-wrap: nowrap; overflow-x: auto; gap: 18px; justify-content: flex-start; padding: 0 12px 4px; scroll-snap-type: x mandatory; }
+    .menu-nav::-webkit-scrollbar { display: none; }
+    .menu-nav a { flex: 0 0 auto; font-size: .95rem; padding: 8px 18px; scroll-snap-align: start; }
+    .menu-nav a.active { box-shadow: 0 2px 6px -2px rgba(0,0,0,.65); }
   }
-  /* When scrolled shrink vertical gap */
-  .site-header.scrolled .site-header-inner { gap: 2px; }
-  .menu-nav::-webkit-scrollbar { display: none; }
-  .menu-nav a { flex: 0 0 auto; font-size: .58rem; padding: 1px 4px; scroll-snap-align: start; }
-  .menu-nav a.active { box-shadow: 0 2px 6px -2px rgba(0,0,0,.65); }
-  @media (max-width: 420px){
-    .menu-nav a { font-size: .9rem; padding: 8px 16px; }
-  }
-
-  /* =====================================================
-     Underline Luxe Navigation (applied via JS class .nav-luxe)
-     ===================================================== */
+/* =====================================================
+   Underline Luxe Navigation (applied via JS class .nav-luxe)
+   ===================================================== */
   .menu-nav.nav-luxe { 
     gap: 20px 42px; 
     padding: 4px var(--space-5) 2px; 
