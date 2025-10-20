@@ -333,13 +333,28 @@ function renderMenuWorkspace(pageState) {
   populateSections(pageState);
   const saveControls = createSaveBar({
     dirtyTitle: 'Unsaved changes',
-    dirtyMessage: 'Download or copy the updated HTML to keep your edits.',
+    dirtyMessage: 'Generate deployment package with instructions to publish changes.',
     cleanMessage: 'All changes synced.',
     actions: [
       {
-        key: 'save',
-        label: 'Download HTML',
+        key: 'deploy',
+        label: '📦 Download Deployment Package',
         variant: 'primary',
+        disabled: !pageState.dirty,
+        onClick: () => {
+          try {
+            generateDeploymentPackage();
+            markPageClean(pageState);
+          } catch (error) {
+            console.error(error);
+            showToast('Unable to generate deployment package', 'error');
+          }
+        }
+      },
+      {
+        key: 'save',
+        label: 'Download This File Only',
+        variant: 'secondary',
         disabled: !pageState.dirty,
         onClick: () => {
           try {
@@ -670,13 +685,28 @@ function renderOffersWorkspace(offersState) {
 
   const saveControls = createSaveBar({
     dirtyTitle: 'Unsaved changes',
-    dirtyMessage: 'Download or copy the updated JSON to keep your edits.',
+    dirtyMessage: 'Generate deployment package with instructions to publish changes.',
     cleanMessage: 'All changes synced.',
     actions: [
       {
-        key: 'save',
-        label: 'Download JSON',
+        key: 'deploy',
+        label: '📦 Download Deployment Package',
         variant: 'primary',
+        disabled: !offersState.dirty,
+        onClick: () => {
+          try {
+            generateDeploymentPackage();
+            markOffersClean(offersState);
+          } catch (error) {
+            console.error(error);
+            showToast('Unable to generate deployment package', 'error');
+          }
+        }
+      },
+      {
+        key: 'save',
+        label: 'Download JSON Only',
+        variant: 'secondary',
         disabled: !offersState.dirty,
         onClick: () => {
           const content = JSON.stringify(offersState.data, null, 2);
@@ -866,6 +896,170 @@ function createSaveBar({ dirtyTitle, dirtyMessage, cleanMessage, actions }) {
   }
 
   return { bar, messageEl, titleEl, buttons, setDirtyState };
+}
+
+// ==========================================
+// DEPLOYMENT PACKAGE GENERATOR
+// ==========================================
+
+function serializePageHTML(pageState) {
+  // Apply all changes to the DOM
+  pageState.sections.forEach((section) => {
+    const container = section.container;
+    const template = section.template;
+    const currentNodes = Array.from(container.querySelectorAll(section.itemSelector));
+    currentNodes.forEach((node) => node.remove());
+    section.items
+      .filter((item) => !item.removed)
+      .forEach((item) => {
+        const node = template.cloneNode(true);
+        writeItemNode(node, item, section);
+        container.appendChild(node);
+      });
+  });
+  const serializer = new XMLSerializer();
+  const html = serializer.serializeToString(pageState.doc);
+  return '<!DOCTYPE html>\n' + html;
+}
+
+function generateDeploymentPackage() {
+  const changedFiles = [];
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  
+  // Collect all changed menu pages
+  state.pages.forEach((pageState, pageId) => {
+    if (pageState.dirty) {
+      const def = getPageDef(pageId);
+      const html = serializePageHTML(pageState);
+      changedFiles.push({
+        name: def.file,
+        content: html,
+        type: 'menu'
+      });
+    }
+  });
+  
+  // Check if offers were changed
+  if (state.offers && state.offers.dirty) {
+    const json = JSON.stringify(state.offers.data, null, 2);
+    changedFiles.push({
+      name: 'offers.json',
+      content: json,
+      type: 'offers'
+    });
+  }
+  
+  if (changedFiles.length === 0) {
+    showToast('⚠️ No changes to deploy', 'warn');
+    return;
+  }
+  
+  // Generate deployment instructions
+  const instructions = generateDeploymentInstructions(changedFiles, timestamp);
+  
+  // Create and download the package
+  downloadDeploymentPackage(changedFiles, instructions, timestamp);
+  
+  showToast(`📦 Deployment package ready! ${changedFiles.length} file(s) included`, 'success');
+}
+
+function generateDeploymentInstructions(files, timestamp) {
+  const fileList = files.map(f => `  - ${f.name}`).join('\n');
+  
+  return `# 🚀 ENISH DRINKS - DEPLOYMENT INSTRUCTIONS
+Generated: ${new Date().toLocaleString()}
+Package ID: ${timestamp}
+
+## 📋 FILES IN THIS PACKAGE
+${fileList}
+
+## 🔧 HOW TO DEPLOY TO YOUR WEBSITE
+
+### Option 1: GitHub Direct Upload (Recommended)
+1. Go to: https://github.com/emiflair/enishdrink
+2. Navigate to each file that needs updating
+3. Click the pencil icon (Edit) for each file
+4. Copy the content from the corresponding file in this package
+5. Paste and commit with message: "Update from admin dashboard ${timestamp}"
+6. Wait 2-3 minutes for GitHub Pages to rebuild
+7. Visit https://www.enishdrinks.com and hard refresh (Cmd+Shift+R)
+
+### Option 2: Git Command Line
+1. Copy all files from this package to your local repo folder
+2. Open terminal in your project folder
+3. Run these commands:
+
+\`\`\`bash
+git add ${files.map(f => f.name).join(' ')}
+git commit -m "Admin dashboard updates - ${timestamp}"
+git push origin main
+\`\`\`
+
+4. Wait 2-3 minutes for deployment
+5. Hard refresh your website: Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows)
+
+### Option 3: GitHub Desktop
+1. Copy files from this package to your local repo folder
+2. Open GitHub Desktop
+3. You'll see the changed files in the left panel
+4. Write commit message: "Admin updates ${timestamp}"
+5. Click "Commit to main"
+6. Click "Push origin"
+7. Wait 2-3 minutes and refresh your website
+
+## ⚠️ IMPORTANT NOTES
+- Always backup your current files before deploying
+- GitHub Pages may take 2-5 minutes to reflect changes
+- Clear your browser cache after deployment
+- Test on https://emiflair.github.io/enishdrink first if uncertain
+
+## 📞 SUPPORT
+If deployment fails, check:
+1. GitHub Actions: https://github.com/emiflair/enishdrink/actions
+2. Look for any error messages
+3. Verify all files are valid HTML/JSON
+
+---
+Generated by Enish Drinks Admin Dashboard
+`;
+}
+
+function downloadDeploymentPackage(files, instructions, timestamp) {
+  // Create a text file with all content and instructions
+  let packageContent = instructions + '\n\n';
+  packageContent += '='.repeat(80) + '\n';
+  packageContent += 'FILE CONTENTS BELOW\n';
+  packageContent += '='.repeat(80) + '\n\n';
+  
+  files.forEach((file, index) => {
+    packageContent += `\n${'='.repeat(80)}\n`;
+    packageContent += `FILE ${index + 1}: ${file.name}\n`;
+    packageContent += `${'='.repeat(80)}\n\n`;
+    packageContent += file.content;
+    packageContent += '\n\n';
+  });
+  
+  // Download the package as a text file
+  const blob = new Blob([packageContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `enish-deployment-${timestamp}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  // Also download individual files
+  files.forEach(file => {
+    const blob = new Blob([file.content], { 
+      type: file.type === 'offers' ? 'application/json' : 'text/html' 
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 function workspaceLoading(message) {
