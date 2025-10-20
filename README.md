@@ -25,12 +25,34 @@ A static multi-page menu experience for **Enish Restaurant & Lounge** paired wit
 
 ## Admin workflow
 
+### Making Changes
 1. Visit `/admin-dashboard.html` while the site is being served over HTTP.
 2. Pick any menu page in the left navigation (or switch to Weekly Offers).
 3. Edit names, descriptions, or prices inline. Add or remove items as needed.
-4. When the save bar appears, choose **Download HTML/JSON** or **Copy** to export your changes.
-5. Replace the downloaded file in this repository and commit as usual.
-6. The reset button reverts the workspace to the latest saved snapshot.
+4. The save bar will appear automatically when you make changes.
+
+### Deploying Changes
+When you're ready to publish your changes to the live website:
+
+1. Click **📦 Download Deployment Package** in the save bar.
+2. This will download:
+   - A complete instructions file (`enish-deployment-TIMESTAMP.txt`)
+   - All changed files (HTML/JSON) ready to upload
+3. Follow the step-by-step deployment instructions in the downloaded file.
+4. Choose your preferred deployment method:
+   - **GitHub Web UI**: Direct upload through browser (easiest)
+   - **Git Command Line**: Use `git add`, `commit`, `push`
+   - **GitHub Desktop**: Visual interface for committing changes
+
+### Alternative: Single File Download
+- Click **Download This File Only** or **Download JSON Only** if you only want the current file.
+- Click **Copy HTML/JSON** to copy content to clipboard for manual paste.
+- Click **Reset** to revert the workspace to the last saved state.
+
+### Deployment Notes
+- Changes typically appear on www.enishdrinks.com within 2-5 minutes after pushing to GitHub.
+- Always do a hard refresh (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows) to see updates.
+- The deployment package includes complete instructions for each method.
 
 ## File map
 
